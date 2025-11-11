@@ -12,7 +12,6 @@ function fillTimeSlots() {
 }
 fillTimeSlots();
 
-// Минимальная дата сегодня
 document.getElementById('serviceDate').min = new Date().toISOString().split('T')[0];
 
 // ----------------- КЛИЕНТ -----------------
@@ -91,12 +90,10 @@ function renderRecords() {
   records.forEach(r => {
     const div = document.createElement('div');
     div.className = 'record';
-
-    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''} <br>
+    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''}<br>
     Создал: ${r.createdBy} <br>
     Статус: ${r.status || '-'} | Сумма: ${r.sum || '-'}`;
 
-    // ----------------- РАБОЧИЕ КНОПКИ -----------------
     if(currentUser && currentUser.role === 'worker') {
       div.innerHTML += `<br>
         <button onclick="markStatus(${r.id}, 'Сделано')">Сделано</button>
