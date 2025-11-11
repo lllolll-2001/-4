@@ -1,36 +1,38 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Шиномонтаж</title>
-  <style>
-    :root{
-      --bg:#121217;
-      --card:#1f1f24;
-      --accent:#ff3b3b;
-      --text:#f5f5f5;
-      --muted:#bbbbbb;
-    }
-    *{box-sizing:border-box;}
-    body{
-      margin:0;
-      font-family:Inter,Arial,Helvetica,sans-serif;
-      background:linear-gradient(180deg,#0f0f14 0%, #15151a 100%);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-    }
-    .wrap{max-width:980px;margin:24px auto;padding:16px;}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-    header h1{color:var(--accent);margin:0;}
-    .card{background:var(--card);padding:14px;border-radius:10px;margin-bottom:14px;box-shadow:0 6px 18px rgba(0,0,0,0.45);}
-    input, select {width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#0f1114;color:var(--text);}
-    button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;}
-    button:hover{opacity:.95;}
-    .tg-button{display:inline-block;margin:4px 0;padding:6px 10px;background:#0088cc;color:#fff;border-radius:6px;text-decoration:none;}
-    .records {margin-top:14px;}
-    .record {background:linear-gradient(180deg,#16161a,#111114);border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin:8px 0;}
-    #earningsSection {background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.45);margin-top:20px;}
-  </style>
+<meta charset="UTF-8">
+<title>Шиномонтаж</title>
+<style>
+:root{
+  --bg:#121217;
+  --card:#1f1f24;
+  --accent:#ff3b3b;
+  --text:#f5f5f5;
+  --muted:#bbbbbb;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:Inter,Arial,Helvetica,sans-serif;
+  background:linear-gradient(180deg,#0f0f14 0%, #15151a 100%);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px;margin:24px auto;padding:16px;}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+header h1{color:var(--accent);margin:0;}
+.card{background:var(--card);padding:14px;border-radius:10px;margin-bottom:14px;box-shadow:0 6px 18px rgba(0,0,0,0.45);}
+input, select {width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#0f1114;color:var(--text);}
+button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;}
+button:hover{opacity:.95;}
+.records {margin-top:14px;}
+.record {background:linear-gradient(180deg,#16161a,#111114);border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin:8px 0;}
+#earningsSection {background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.45);margin-top:20px;}
+table {width:100%;border-collapse:collapse;}
+th,td {padding:8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1);}
+th {color:var(--accent);}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -42,9 +44,29 @@
   <div class="card">
     <h2>Новая запись клиента</h2>
     <input type="text" id="clientName" placeholder="Имя">
-    <input type="text" id="vehicleType" placeholder="Тип авто">
-    <input type="text" id="wheelRadius" placeholder="Радиус колеса">
-    <input type="text" id="service" placeholder="Услуга">
+    <select id="vehicleType">
+      <option value="">Тип авто</option>
+      <option value="Легковой">Легковой</option>
+      <option value="Грузовой">Грузовой</option>
+      <option value="Внедорожник">Внедорожник</option>
+    </select>
+    <select id="wheelRadius">
+      <option value="">Радиус колеса</option>
+      <option value="13">13</option>
+      <option value="14">14</option>
+      <option value="15">15</option>
+      <option value="16">16</option>
+      <option value="17">17</option>
+      <option value="18">18</option>
+      <option value="19">19</option>
+    </select>
+    <select id="service">
+      <option value="">Вид работы</option>
+      <option value="Снятие/установка">Снятие/установка</option>
+      <option value="Балансировка">Балансировка</option>
+      <option value="Заклейка прокола">Заклейка прокола</option>
+      <option value="Замена шин">Замена шин</option>
+    </select>
     <input type="date" id="serviceDate">
     <select id="serviceTime"></select>
     <button onclick="submitClientRecord()">Добавить запись</button>
@@ -74,6 +96,12 @@
       <option value="month">Месяц</option>
     </select>
     <div>Итого: <span id="earningsDisplay">0 грн</span></div>
+    <table>
+      <thead>
+        <tr><th>Дата</th><th>Имя</th><th>Услуга</th><th>Сумма</th><th>Создал</th></tr>
+      </thead>
+      <tbody id="earningsTable"></tbody>
+    </table>
   </div>
 </div>
 
@@ -104,7 +132,7 @@ async function submitClientRecord() {
     time: document.getElementById('serviceTime').value,
     createdBy: 'client'
   };
-  if(!newRecord.name || !newRecord.date || !newRecord.time){
+  if(!newRecord.name || !newRecord.date || !newRecord.time || !newRecord.vehicle || !newRecord.radius || !newRecord.service){
     alert('Заполните все поля');
     return;
   }
@@ -154,9 +182,7 @@ async function login(username,password){
     alert('Вход успешен');
     renderRecords();
     toggleEarningsSection();
-  } else {
-    alert('Неверный логин или пароль');
-  }
+  } else alert('Неверный логин или пароль');
 }
 
 // ----------------- ОТОБРАЖЕНИЕ -----------------
@@ -209,22 +235,12 @@ function calculateEarnings(period='day'){
     filtered = records.filter(r=>r.sum && r.date===now.toISOString().split('T')[0]);
   }
   if(period==='week'){
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate()-now.getDay());
-    filtered = records.filter(r=>{
-      if(!r.sum) return false;
-      const recordDate = new Date(r.date);
-      return recordDate>=startOfWeek && recordDate<=now;
-    });
+    const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate()-now.getDay());
+    filtered = records.filter(r=>r.sum && new Date(r.date)>=startOfWeek && new Date(r.date)<=now);
   }
   if(period==='month'){
-    const month = now.getMonth();
-    const year = now.getFullYear();
-    filtered = records.filter(r=>{
-      if(!r.sum) return false;
-      const recordDate = new Date(r.date);
-      return recordDate.getMonth()===month && recordDate.getFullYear()===year;
-    });
+    const month = now.getMonth(); const year = now.getFullYear();
+    filtered = records.filter(r=>r.sum && new Date(r.date).getMonth()===month && new Date(r.date).getFullYear()===year);
   }
   return filtered.reduce((acc,r)=>acc+parseFloat(r.sum||0),0);
 }
@@ -233,8 +249,19 @@ function showEarnings(){
   if(!currentUser || currentUser.role!=='boss') return;
   const period = document.getElementById('earningPeriod')?.value || 'day';
   const total = calculateEarnings(period);
-  const display = document.getElementById('earningsDisplay');
-  if(display) display.innerText = total+' грн';
+  document.getElementById('earningsDisplay').innerText = total+' грн';
+
+  const tbody = document.getElementById('earningsTable');
+  tbody.innerHTML = '';
+  records.filter(r=>r.sum).forEach(r=>{
+    tbody.innerHTML += `<tr>
+      <td>${r.date}</td>
+      <td>${r.name}</td>
+      <td>${r.service}</td>
+      <td>${r.sum}</td>
+      <td>${r.createdBy}</td>
+    </tr>`;
+  });
 }
 
 function toggleEarningsSection(){
