@@ -16,3 +16,8 @@ export default function handler(req, res) {
     res.status(405).json({ message: 'Метод не поддерживается' });
   }
 }
+if(currentUser.role === 'boss') {
+  document.getElementById('bossFilter').style.display = 'block'; // показываем блок фильтра
+} else {
+  document.getElementById('bossFilter').style.display = 'none';
+}
