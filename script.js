@@ -2,7 +2,7 @@ let currentUser = null;
 let records = [];
 let timeSelect = document.getElementById('serviceTime');
 
-// Заполняем время по 50 минут
+// ==================== Время обслуживания ====================
 function fillTimeSlots() {
   timeSelect.innerHTML = '';
   for(let h=8; h<=16; h++) {
@@ -15,7 +15,7 @@ fillTimeSlots();
 // Минимальная дата сегодня
 document.getElementById('serviceDate').min = new Date().toISOString().split('T')[0];
 
-// Отправка записи клиентом
+// ==================== Клиентская запись ====================
 async function submitClientRecord() {
   const newRecord = {
     name: document.getElementById('clientName').value,
@@ -33,7 +33,7 @@ async function submitClientRecord() {
   await addRecord(newRecord);
 }
 
-// API взаимодействие
+// ==================== API взаимодействие ====================
 async function fetchRecords() {
   const res = await fetch('/api/records');
   records = await res.json();
@@ -58,7 +58,7 @@ async function updateRecord(id, update) {
   fetchRecords();
 }
 
-// Логин
+// ==================== Логин ====================
 async function login(username, password) {
   const res = await fetch('/api/login', {
     method:'POST',
@@ -69,13 +69,26 @@ async function login(username, password) {
     const data = await res.json();
     currentUser = data.user;
     alert('Вход успешен');
-    renderRecords();
+
+    // Показываем контейнер записей
+    document.getElementById('recordsContainer').style.display = 'block';
+    // Скрываем форму входа
+    document.getElementById('loginForm').style.display = 'none';
+
+    // Показываем фильтр только для босса
+    if(currentUser.role === 'boss') {
+      document.getElementById('bossFilter').style.display = 'block';
+    } else {
+      document.getElementById('bossFilter').style.display = 'none';
+    }
+
+    fetchRecords(); // отрисовываем записи
   } else {
     alert('Неверный логин или пароль');
   }
 }
 
-// Отрисовка записей
+// ==================== Отрисовка записей ====================
 function renderRecords() {
   const container = document.getElementById('recordsContainer');
   container.innerHTML = '';
@@ -84,19 +97,24 @@ function renderRecords() {
     div.className='record';
     div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''} <br> 
     Создал: ${r.createdBy} <br>`;
+
+    // Кнопки для работников
     if(currentUser && currentUser.role==='worker') {
       div.innerHTML += `<button onclick="updateRecord(${r.id},{status:'Сделано'})">Сделано</button>
                         <button onclick="updateRecord(${r.id},{status:'Не приехал'})">Не приехал</button>`;
       div.innerHTML += `<button onclick="addWork(${r.id})">Добавить работу</button>`;
     }
+
     container.appendChild(div);
   });
 }
 
-// Добавление работы без записи
+// ==================== Добавление работы без записи ====================
 async function addWork(recordId=null){
   const workName = prompt('Что сделано?');
   const sum = prompt('Сумма:');
+  if(!workName || !sum) return;
+
   const workRecord = {
     name: workName,
     sum: sum,
@@ -107,5 +125,30 @@ async function addWork(recordId=null){
   await addRecord(workRecord);
 }
 
-// Инициализация
+// ==================== Фильтр для босса ====================
+function filterRecords(period) {
+  const now = new Date();
+  let filtered = [];
+
+  if(period === 'day') {
+    filtered = records.filter(r => r.date === now.toISOString().split('T')[0]);
+  } else if(period === 'week') {
+    const firstDay = new Date();
+    firstDay.setDate(now.getDate() - now.getDay());
+    filtered = records.filter(r => {
+      const rDate = new Date(r.date);
+      return rDate >= firstDay && rDate <= now;
+    });
+  } else if(period === 'month') {
+    filtered = records.filter(r => {
+      const rDate = new Date(r.date);
+      return rDate.getMonth() === now.getMonth() && rDate.getFullYear() === now.getFullYear();
+    });
+  }
+
+  const sum = filtered.reduce((acc,r)=>acc + (Number(r.sum)||0),0);
+  document.getElementById('filterResult').innerText = `Сумма: ${sum} грн`;
+}
+
+// ==================== Инициализация ====================
 fetchRecords();
