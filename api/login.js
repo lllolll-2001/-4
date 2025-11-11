@@ -1,6 +1,6 @@
 const users = [
-  { username: 'boss', password: 'Kolovo.123q', role: 'boss' },
-  { username: 'worker', password: 'Kolovo.123q', role: 'worker' }
+  { username: 'boss', password: '1234', role: 'worker' },
+  { username: 'worker', password: '1111', role: 'worker' }
 ];
 
 export default function handler(req, res) {
