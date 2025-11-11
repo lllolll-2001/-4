@@ -1,67 +1,247 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Шиномонтаж</title>
-<link rel="stylesheet" href="style.css">
-<script defer src="script.js"></script>
+  <meta charset="UTF-8">
+  <title>Шиномонтаж</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input, select, button { margin: 5px; padding: 5px; }
+    .record { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; }
+    #earningsSection { border: 1px solid #444; padding: 10px; margin-top: 20px; }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>Шиномонтаж</h1>
-  </header>
 
-  <div id="clientForm" class="card">
-    <h2>Запись на обслуживание</h2>
-    <input type="text" id="clientName" placeholder="Ваше имя">
-    <select id="vehicleType">
-      <option value="Легковой">Легковой</option>
-      <option value="Кроссовер">Кроссовер</option>
-      <option value="Внедорожник">Внедорожник</option>
-      <option value="Грузовой">Грузовой</option>
-      <option value="Микроавтобус">Микроавтобус</option>
-      <option value="Коммерческий">Коммерческий</option>
-    </select>
-    <select id="wheelRadius">
-      <option value="13-15">13-15</option>
-      <option value="16-18">16-18</option>
-      <option value="19-21">19-21</option>
-    </select>
-    <select id="service">
-      <option value="Балансировка">Балансировка</option>
-      <option value="Смена резины">Смена резины</option>
-      <option value="Смена резины + Балансировка">Смена резины + Балансировка</option>
-    </select>
-    <input type="date" id="serviceDate" min="">
-    <select id="serviceTime"></select>
-    <button onclick="submitClientRecord()">Записаться</button>
-  </div>
+<h1>Шиномонтаж - Записи</h1>
 
-  <div class="card" id="loginForm">
-    <h2>Вход для работников и босса</h2>
-    <input type="text" id="loginUsername" placeholder="Логин">
-    <input type="password" id="loginPassword" placeholder="Пароль">
-    <button onclick="login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value)">Войти</button>
-  </div>
+<!-- Форма клиента -->
+<h2>Новая запись клиента</h2>
+<input type="text" id="clientName" placeholder="Имя">
+<input type="text" id="vehicleType" placeholder="Тип авто">
+<input type="text" id="wheelRadius" placeholder="Радиус колеса">
+<input type="text" id="service" placeholder="Услуга">
+<input type="date" id="serviceDate">
+<select id="serviceTime"></select>
+<button onclick="submitClientRecord()">Добавить запись</button>
 
-  <div id="bossFilter" class="card" style="display:none">
-    <h2>Фильтр заработка</h2>
-    <button onclick="filterRecords('day')">Сегодня</button>
-    <button onclick="filterRecords('week')">Неделя</button>
-    <button onclick="filterRecords('month')">Месяц</button>
-    <p id="filterResult">Сумма: 0 грн</p>
-  </div>
+<hr>
 
-  <div id="recordsContainer" class="records"></div>
+<!-- Форма логина -->
+<h2>Вход</h2>
+<input type="text" id="loginUsername" placeholder="Логин">
+<input type="password" id="loginPassword" placeholder="Пароль">
+<button onclick="login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value)">Войти</button>
 
-  <div class="card" id="contactInfo">
-    <h2>Контакты и время работы</h2>
-    <p>Время работы: 8:00 – 17:00</p>
-    <p>Тел.: Дмитрий 0937900765, Владислав 0969575306</p>
-    <a class="tg-button" href="https://t.me/VladyslavShunu" target="_blank">Наш Telegram</a>
-    <a href="https://maps.app.goo.gl/hDVFX9WXePfR5HTh9" target="_blank">Мы на карте</a>
-  </div>
+<hr>
+
+<!-- Список записей -->
+<h2>Все записи</h2>
+<div id="recordsContainer"></div>
+
+<!-- Раздел заработка начальника -->
+<div id="earningsSection" style="display:none;">
+  <h2>Заработок начальника</h2>
+  <label>Показать прибыль: </label>
+  <select id="earningPeriod" onchange="showEarnings()">
+    <option value="day">Сегодня</option>
+    <option value="week">Неделя</option>
+    <option value="month">Месяц</option>
+  </select>
+  <div>Итого: <span id="earningsDisplay">0 грн</span></div>
 </div>
+
+<script>
+let currentUser = null;
+let records = [];
+const timeSelect = document.getElementById('serviceTime');
+
+// ----------------- ВРЕМЯ -----------------
+function fillTimeSlots() {
+  timeSelect.innerHTML = '';
+  for (let h = 8; h <= 16; h++) {
+    timeSelect.innerHTML += `<option>${h}:00</option>`;
+    timeSelect.innerHTML += `<option>${h}:50</option>`;
+  }
+}
+fillTimeSlots();
+
+// Минимальная дата сегодня
+document.getElementById('serviceDate').min = new Date().toISOString().split('T')[0];
+
+// ----------------- КЛИЕНТ -----------------
+async function submitClientRecord() {
+  const newRecord = {
+    name: document.getElementById('clientName').value.trim(),
+    vehicle: document.getElementById('vehicleType').value,
+    radius: document.getElementById('wheelRadius').value,
+    service: document.getElementById('service').value,
+    date: document.getElementById('serviceDate').value,
+    time: document.getElementById('serviceTime').value,
+    createdBy: 'client'
+  };
+
+  if(!newRecord.name || !newRecord.date || !newRecord.time) {
+    alert('Заполните все поля');
+    return;
+  }
+
+  if(records.some(r => r.date === newRecord.date && r.time === newRecord.time)) {
+    alert('Выбранное время уже занято!');
+    return;
+  }
+
+  await addRecord(newRecord);
+}
+
+// ----------------- API -----------------
+async function fetchRecords() {
+  const res = await fetch('/api/records');
+  records = await res.json();
+  renderRecords();
+  showEarnings();
+}
+
+async function addRecord(record) {
+  await fetch('/api/records', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record)
+  });
+  fetchRecords();
+}
+
+async function updateRecord(id, update) {
+  await fetch('/api/records', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, update })
+  });
+  fetchRecords();
+}
+
+// ----------------- ЛОГИН -----------------
+async function login(username, password) {
+  const res = await fetch('/api/login', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+
+  if(res.status === 200) {
+    const data = await res.json();
+    currentUser = data.user;
+    alert('Вход успешен');
+    renderRecords();
+    toggleEarningsSection();
+  } else {
+    alert('Неверный логин или пароль');
+  }
+}
+
+// ----------------- ОТОБРАЖЕНИЕ -----------------
+function renderRecords() {
+  const container = document.getElementById('recordsContainer');
+  container.innerHTML = '';
+
+  records.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'record';
+
+    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''} <br>
+    Создал: ${r.createdBy} <br>
+    Статус: ${r.status || '-'} | Сумма: ${r.sum || '-'}`;
+
+    if(currentUser && currentUser.role === 'worker') {
+      div.innerHTML += `<br>
+        <button onclick="markStatus(${r.id}, 'Сделано')">Сделано</button>
+        <button onclick="markStatus(${r.id}, 'Не приехал')">Не приехал</button>
+        <button onclick="addWork(${r.id})">Добавить работу</button>`;
+    }
+
+    container.appendChild(div);
+  });
+}
+
+// ----------------- РАБОТА -----------------
+async function addWork(recordId=null) {
+  const workName = prompt('Что сделано?');
+  if(!workName) return;
+
+  const sum = prompt('Сумма:');
+  if(!sum) return;
+
+  const workRecord = {
+    name: workName,
+    sum,
+    date: new Date().toISOString().split('T')[0],
+    createdBy: currentUser.username,
+    linkedTo: recordId
+  };
+
+  await addRecord(workRecord);
+}
+
+async function markStatus(id, status) {
+  const sum = status === 'Сделано' ? prompt('Введите сумму за работу:') : undefined;
+  await updateRecord(id, { status, sum });
+}
+
+// ----------------- ЗАРАБОТОК НАЧАЛЬНИКА -----------------
+function calculateEarnings(period = 'day') {
+  if (!records || records.length === 0) return 0;
+
+  const now = new Date();
+  let filtered = [];
+
+  if (period === 'day') {
+    filtered = records.filter(r => r.sum && r.date === now.toISOString().split('T')[0]);
+  }
+
+  if (period === 'week') {
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    filtered = records.filter(r => {
+      if(!r.sum) return false;
+      const recordDate = new Date(r.date);
+      return recordDate >= startOfWeek && recordDate <= now;
+    });
+  }
+
+  if (period === 'month') {
+    const month = now.getMonth();
+    const year = now.getFullYear();
+    filtered = records.filter(r => {
+      if(!r.sum) return false;
+      const recordDate = new Date(r.date);
+      return recordDate.getMonth() === month && recordDate.getFullYear() === year;
+    });
+  }
+
+  return filtered.reduce((acc,r)=>acc+parseFloat(r.sum||0),0);
+}
+
+function showEarnings() {
+  if(!currentUser || currentUser.role !== 'boss') return;
+
+  const period = document.getElementById('earningPeriod')?.value || 'day';
+  const total = calculateEarnings(period);
+  const display = document.getElementById('earningsDisplay');
+  if(display) display.innerText = total + ' грн';
+}
+
+function toggleEarningsSection() {
+  const section = document.getElementById('earningsSection');
+  if(currentUser && currentUser.role === 'boss') {
+    section.style.display = 'block';
+    showEarnings();
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+// ----------------- ИНИЦИАЛИЗАЦИЯ -----------------
+fetchRecords();
+</script>
+
 </body>
 </html>
