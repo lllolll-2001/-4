@@ -24,56 +24,54 @@
     header h1{color:var(--accent);margin:0}
     .card{background:var(--card);padding:14px;border-radius:10px;margin-bottom:14px;box-shadow:0 6px 18px rgba(0,0,0,0.45)}
     input, select {width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#0f1114;color:var(--text)}
-    button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;margin:4px 2px}
+    button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
     button:hover{opacity:.95}
+    .tg-button{display:inline-block;margin:4px 0;padding:6px 10px;background:#0088cc;color:#fff;border-radius:6px;text-decoration:none}
     .records {margin-top:14px;}
     .record {background:linear-gradient(180deg,#16161a,#111114);border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin:8px 0;}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <header><h1>Шиномонтаж</h1></header>
+  <header>
+    <h1>Шиномонтаж</h1>
+  </header>
 
   <!-- Форма клиента -->
   <div class="card">
     <h2>Новая запись</h2>
     <input type="text" id="clientName" placeholder="Имя">
-
     <select id="vehicleType">
       <option value="">Тип авто</option>
-      <option value="Легковой">Легковой</option>
-      <option value="Кроссовер">Кроссовер</option>
-      <option value="Грузовой">Грузовой</option>
-      <option value="Коммерческий транспорт">Коммерческий транспорт</option>
-      <option value="Мото">Мото</option>
+      <option>Легковой</option>
+      <option>Кроссовер</option>
+      <option>Коммерческий транспорт</option>
     </select>
-
     <select id="wheelRadius">
       <option value="">Радиус колеса</option>
-      <option value="13">13</option>
-      <option value="14">14</option>
-      <option value="15">15</option>
-      <option value="16">16</option>
-      <option value="17">17</option>
-      <option value="18">18</option>
-      <option value="19">19</option>
-      <option value="20">20</option>
-      <option value="21">21</option>
+      <option>R13</option>
+      <option>R14</option>
+      <option>R15</option>
+      <option>R16</option>
+      <option>R17</option>
+      <option>R18</option>
+      <option>R19</option>
+      <option>R20</option>
+      <option>R21</option>
     </select>
-
     <select id="service">
-      <option value="">Вид работы</option>
-      <option value="Балансировка">Балансировка</option>
-      <option value="Замена шин">Замена шин</option>
-      <option value="Ремонт прокола">Ремонт прокола</option>
+      <option value="">Вид работ</option>
+      <option>Замена шин</option>
+      <option>Балансировка</option>
+      <option>Ремонт прокола</option>
+      <option>Снятие/установка</option>
     </select>
-
     <input type="date" id="serviceDate">
     <select id="serviceTime"></select>
     <button onclick="submitClientRecord()">Добавить запись</button>
   </div>
 
-  <!-- Логин -->
+  <!-- Форма логина -->
   <div class="card">
     <h2>Вход</h2>
     <input type="text" id="loginUsername" placeholder="Логин">
@@ -81,18 +79,38 @@
     <button onclick="login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value)">Войти</button>
   </div>
 
-  <!-- Записи -->
-  <div class="records" id="recordsContainer"></div>
+  <!-- Список записей -->
+  <div class="card">
+    <h2>Все записи</h2>
+    <div id="recordsContainer" class="records"></div>
+  </div>
 
-  <!-- Раздел начальника -->
+  <!-- Раздел заработка начальника -->
   <div class="card" id="earningsSection" style="display:none;">
     <h2>Заработок начальника</h2>
+    <label>Показать прибыль: </label>
     <select id="earningPeriod" onchange="showEarnings()">
       <option value="day">Сегодня</option>
       <option value="week">Неделя</option>
       <option value="month">Месяц</option>
     </select>
     <div>Итого: <span id="earningsDisplay">0 грн</span></div>
+  </div>
+
+  <!-- Контакты и карта -->
+  <div class="card" id="contactInfo">
+    <h2>Контакты и время работы</h2>
+    <p>Время работы: 8:00 – 17:00</p>
+    <p>Тел.: Дмитрий 0937900765, Владислав 0969575306</p>
+    <a class="tg-button" href="https://t.me/VladyslavShunu" target="_blank">Наш Telegram</a>
+
+    <h2>Где мы находимся</h2>
+    <div class="map" style="width:100%;height:300px;margin-top:8px;">
+      <iframe 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!..." 
+        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+    <a href="https://maps.app.goo.gl/hDVFX9WXePfR5HTh9" target="_blank" class="tg-button" style="margin-top:8px;display:inline-block;">Мы на карте</a>
   </div>
 </div>
 
@@ -101,20 +119,18 @@ let currentUser = null;
 let records = [];
 const timeSelect = document.getElementById('serviceTime');
 
-// Таймслоты каждые 50 минут
+// ----------------- ВРЕМЯ -----------------
 function fillTimeSlots() {
   timeSelect.innerHTML = '';
-  for(let h=8; h<=16; h++){
+  for (let h = 8; h <= 16; h++) {
     timeSelect.innerHTML += `<option>${h}:00</option>`;
     timeSelect.innerHTML += `<option>${h}:50</option>`;
   }
 }
 fillTimeSlots();
-
-// Минимальная дата
 document.getElementById('serviceDate').min = new Date().toISOString().split('T')[0];
 
-// Добавление записи клиентом
+// ----------------- КЛИЕНТ -----------------
 async function submitClientRecord() {
   const newRecord = {
     name: document.getElementById('clientName').value.trim(),
@@ -125,153 +141,139 @@ async function submitClientRecord() {
     time: document.getElementById('serviceTime').value,
     createdBy: 'client'
   };
-  if(!newRecord.name || !newRecord.date || !newRecord.time){
-    alert('Заполните обязательные поля');
+
+  if(!newRecord.name || !newRecord.date || !newRecord.time) {
+    alert('Заполните все поля');
     return;
   }
-  if(records.some(r=>r.date===newRecord.date && r.time===newRecord.time)){
+
+  if(records.some(r => r.date === newRecord.date && r.time === newRecord.time)) {
     alert('Выбранное время уже занято!');
     return;
   }
+
   await addRecord(newRecord);
 }
 
-// API
-async function fetchRecords(){
+// ----------------- API -----------------
+async function fetchRecords() {
   const res = await fetch('/api/records');
   records = await res.json();
   renderRecords();
   showEarnings();
 }
 
-async function addRecord(record){
-  await fetch('/api/records',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(record)
+async function addRecord(record) {
+  await fetch('/api/records', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record)
   });
   fetchRecords();
 }
 
-async function updateRecord(id, update){
-  await fetch('/api/records',{
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({id, update})
+async function updateRecord(id, update) {
+  await fetch('/api/records', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, update })
   });
   fetchRecords();
 }
-    <div class="card" id="contactInfo">
-    <h2>Контакты и время работы</h2>
-    <p>Время работы: 8:00 – 17:00</p>
-    <p>Тел.: Дмитрий 0937900765, Владислав 0969575306</p>
-    <a class="tg-button" href="https://t.me/VladyslavShunu" target="_blank">Наш Telegram</a><!-- ...весь предыдущий код HTML до конца записей и начальника -->
 
-<!-- Контакты и карта -->
-<div class="card">
-  <h2>Контакты</h2>
-  <p>Телефон: <a href="tel:+380123456789" class="tg-button">+380123456789</a></p>
-  <p>Telegram: <a href="https://t.me/username" class="tg-button" target="_blank">@username</a></p>
-  
-  <h2>Где мы находимся</h2>
-  <div class="map">
-    <iframe 
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!..." 
-      width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-  </div>
-</div>
-    <a href="https://maps.app.goo.gl/hDVFX9WXePfR5HTh9" target="_blank">Мы на карте</a>
-  </div>
-
-// Логин
-async function login(username,password){
-  const res = await fetch('/api/login',{
+// ----------------- ЛОГИН -----------------
+async function login(username, password) {
+  const res = await fetch('/api/login', {
     method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({username,password})
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ username, password })
   });
-  if(res.status===200){
+
+  if(res.status === 200) {
     const data = await res.json();
     currentUser = data.user;
     alert('Вход успешен');
     renderRecords();
     toggleEarningsSection();
-  } else{
+  } else {
     alert('Неверный логин или пароль');
   }
 }
 
-// Рендер записей
-function renderRecords(){
+// ----------------- ОТОБРАЖЕНИЕ -----------------
+function renderRecords() {
   const container = document.getElementById('recordsContainer');
-  container.innerHTML='';
-  records.forEach(r=>{
+  container.innerHTML = '';
+
+  records.forEach(r => {
     const div = document.createElement('div');
-    div.className='record';
-    div.innerHTML=`<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date} ${r.time} <br>
-      Создал: ${r.createdBy}<br> Статус: ${r.status || '-'}`;
-    
-    if(currentUser && currentUser.role==='worker'){
-      div.innerHTML+=`<br>
-        <button onclick="markStatus(${r.id},'Сделано')">Сделано</button>
-        <button onclick="markStatus(${r.id},'Не приехал')">Не приехал</button>
-        <button onclick="addWork(${r.id})">Добавить работу</button>`;
+    div.className = 'record';
+
+    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''} <br>
+    Создал: ${r.createdBy} <br>
+    Статус: ${r.status || '-'} | Сумма: ${r.sum || '-'}`;
+
+    if(currentUser && currentUser.role === 'worker') {
+      div.innerHTML += `<br>
+        <button onclick="markStatus(${r.id}, 'Сделано')">Сделано</button>
+        <button onclick="markStatus(${r.id}, 'Не приехал')">Не приехал</button>`;
     }
+
     container.appendChild(div);
   });
 }
 
-// Добавить работу
-async function addWork(recordId=null){
-  const workName = prompt('Что сделано?');
-  if(!workName) return;
-  const sum = prompt('Сумма:');
-  if(!sum) return;
-  const workRecord={
-    name:workName,
-    sum,
-    date:new Date().toISOString().split('T')[0],
-    createdBy:currentUser.username,
-    linkedTo:recordId
-  };
-  await addRecord(workRecord);
-}
+// ----------------- ЗАРАБОТОК НАЧАЛЬНИКА -----------------
+function calculateEarnings(period = 'day') {
+  if (!records || records.length === 0) return 0;
 
-// Статус
-async function markStatus(id,status){
-  const sum = status==='Сделано'?prompt('Введите сумму за работу:'):undefined;
-  await updateRecord(id,{status,sum});
-}
-
-// Начальник - заработок
-function calculateEarnings(period='day'){
-  if(!records || records.length===0) return 0;
   const now = new Date();
-  let filtered=[];
-  if(period==='day') filtered=records.filter(r=>r.sum && r.date===now.toISOString().split('T')[0]);
-  if(period==='week'){
-    const startOfWeek=new Date(now); startOfWeek.setDate(now.getDate()-now.getDay());
-    filtered=records.filter(r=>r.sum && new Date(r.date)>=startOfWeek && new Date(r.date)<=now);
+  let filtered = [];
+
+  if (period === 'day') {
+    filtered = records.filter(r => r.sum && r.date === now.toISOString().split('T')[0]);
   }
-  if(period==='month'){
-    filtered=records.filter(r=>r.sum && new Date(r.date).getMonth()===now.getMonth() && new Date(r.date).getFullYear()===now.getFullYear());
+  if (period === 'week') {
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    filtered = records.filter(r => {
+      if(!r.sum) return false;
+      const recordDate = new Date(r.date);
+      return recordDate >= startOfWeek && recordDate <= now;
+    });
   }
+  if (period === 'month') {
+    const month = now.getMonth();
+    const year = now.getFullYear();
+    filtered = records.filter(r => {
+      if(!r.sum) return false;
+      const recordDate = new Date(r.date);
+      return recordDate.getMonth() === month && recordDate.getFullYear() === year;
+    });
+  }
+
   return filtered.reduce((acc,r)=>acc+parseFloat(r.sum||0),0);
 }
 
-function showEarnings(){
-  if(!currentUser || currentUser.role!=='boss') return;
-  const period=document.getElementById('earningPeriod').value||'day';
-  const total=calculateEarnings(period);
-  document.getElementById('earningsDisplay').innerText=total+' грн';
+function showEarnings() {
+  if(!currentUser || currentUser.role !== 'boss') return;
+  const period = document.getElementById('earningPeriod')?.value || 'day';
+  const total = calculateEarnings(period);
+  const display = document.getElementById('earningsDisplay');
+  if(display) display.innerText = total + ' грн';
 }
 
-function toggleEarningsSection(){
-  const section=document.getElementById('earningsSection');
-  section.style.display=(currentUser && currentUser.role==='boss')?'block':'none';
+function toggleEarningsSection() {
+  const section = document.getElementById('earningsSection');
+  if(currentUser && currentUser.role === 'boss') {
+    section.style.display = 'block';
+    showEarnings();
+  } else {
+    section.style.display = 'none';
+  }
 }
 
-// Инициализация
+// ----------------- ИНИЦИАЛИЗАЦИЯ -----------------
 fetchRecords();
 </script>
 </body>
