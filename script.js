@@ -12,6 +12,7 @@ function fillTimeSlots() {
 }
 fillTimeSlots();
 
+// Минимальная дата сегодня
 document.getElementById('serviceDate').min = new Date().toISOString().split('T')[0];
 
 // ----------------- КЛИЕНТ -----------------
@@ -26,12 +27,12 @@ async function submitClientRecord() {
     createdBy: 'client'
   };
 
-  if(!newRecord.name || !newRecord.date || !newRecord.time) {
+  if (!newRecord.name || !newRecord.date || !newRecord.time) {
     alert('Заполните все поля');
     return;
   }
 
-  if(records.some(r => r.date === newRecord.date && r.time === newRecord.time)) {
+  if (records.some(r => r.date === newRecord.date && r.time === newRecord.time)) {
     alert('Выбранное время уже занято!');
     return;
   }
@@ -41,44 +42,67 @@ async function submitClientRecord() {
 
 // ----------------- API -----------------
 async function fetchRecords() {
-  const res = await fetch('/api/records');
-  records = await res.json();
-  renderRecords();
+  try {
+    const res = await fetch('/api/records');
+    if (!res.ok) throw new Error('Ошибка при загрузке записей');
+    records = await res.json();
+    renderRecords();
+  } catch (e) {
+    console.error(e);
+    alert('Не удалось загрузить записи');
+  }
 }
 
 async function addRecord(record) {
-  await fetch('/api/records', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(record)
-  });
-  await fetchRecords();
+  try {
+    const res = await fetch('/api/records', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+    if (!res.ok) throw new Error('Ошибка при добавлении записи');
+    await fetchRecords(); // Ждем обновления после POST
+  } catch (e) {
+    console.error(e);
+    alert('Не удалось добавить запись');
+  }
 }
 
 async function updateRecord(id, update) {
-  await fetch('/api/records', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, update })
-  });
-  await fetchRecords();
+  try {
+    const res = await fetch('/api/records', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, update })
+    });
+    if (!res.ok) throw new Error('Ошибка при обновлении записи');
+    await fetchRecords(); // Ждем обновления после PUT
+  } catch (e) {
+    console.error(e);
+    alert('Не удалось обновить запись');
+  }
 }
 
 // ----------------- ЛОГИН -----------------
 async function login(username, password) {
-  const res = await fetch('/api/login', {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({ username, password })
-  });
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
 
-  if(res.status === 200) {
-    const data = await res.json();
-    currentUser = data.user;
-    alert('Вход успешен');
-    renderRecords();
-  } else {
-    alert('Неверный логин или пароль');
+    if (res.ok) {
+      const data = await res.json();
+      currentUser = data.user;
+      alert('Вход успешен');
+      renderRecords();
+    } else {
+      alert('Неверный логин или пароль');
+    }
+  } catch (e) {
+    console.error(e);
+    alert('Ошибка при входе');
   }
 }
 
@@ -90,11 +114,12 @@ function renderRecords() {
   records.forEach(r => {
     const div = document.createElement('div');
     div.className = 'record';
-    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''}<br>
+    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''} <br>
     Создал: ${r.createdBy} <br>
     Статус: ${r.status || '-'} | Сумма: ${r.sum || '-'}`;
 
-    if(currentUser && currentUser.role === 'worker') {
+    // Кнопки для работников
+    if (currentUser && currentUser.role === 'worker') {
       div.innerHTML += `<br>
         <button onclick="markStatus(${r.id}, 'Сделано')">Сделано</button>
         <button onclick="markStatus(${r.id}, 'Не приехал')">Не приехал</button>
@@ -106,12 +131,12 @@ function renderRecords() {
 }
 
 // ----------------- РАБОТА -----------------
-async function addWork(recordId=null) {
+async function addWork(recordId = null) {
   const workName = prompt('Что сделано?');
-  if(!workName) return;
+  if (!workName) return;
 
   const sum = prompt('Сумма:');
-  if(!sum) return;
+  if (!sum) return;
 
   const workRecord = {
     name: workName,
