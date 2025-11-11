@@ -2,8 +2,8 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 
 const FILE_PATH = './records.json'; // файл для хранения всех записей
-const TELEGRAM_BOT_TOKEN = 'ВАШ_BOT_TOKEN'; // замените на токен вашего бота
-const CHAT_ID = 'ВАШ_CHAT_ID'; // замените на ваш chat_id
+const TELEGRAM_BOT_TOKEN = '8323226215:AAHeV_3NPLgO1koSBFGjmnFzay8fRg6HfuY'; // замените на токен вашего бота
+const CHAT_ID = '8290320310'; // замените на ваш chat_id
 
 // Загружаем старые записи
 let records = [];
