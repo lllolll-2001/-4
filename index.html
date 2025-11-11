@@ -38,14 +38,6 @@
     <button onclick="submitClientRecord()">Записаться</button>
   </div>
 
-  <div class="card" id="contactInfo">
-    <h2>Контакты и время работы</h2>
-    <p>Время работы: 8:00 – 17:00</p>
-    <p>Тел.: Дмитрий 0937900765, Владислав 0969575306</p>
-    <a class="tg-button" href="https://t.me/VladyslavShunu" target="_blank">Наш Telegram</a>
-    <a href="https://maps.app.goo.gl/hDVFX9WXePfR5HTh9" target="_blank">Мы на карте</a>
-  </div>
-
   <div class="card" id="loginForm">
     <h2>Вход для работников и босса</h2>
     <input type="text" id="loginUsername" placeholder="Логин">
@@ -53,7 +45,23 @@
     <button onclick="login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value)">Войти</button>
   </div>
 
-  <div id="recordsContainer"></div>
+  <div id="bossFilter" class="card" style="display:none">
+    <h2>Фильтр заработка</h2>
+    <button onclick="filterRecords('day')">Сегодня</button>
+    <button onclick="filterRecords('week')">Неделя</button>
+    <button onclick="filterRecords('month')">Месяц</button>
+    <p id="filterResult">Сумма: 0 грн</p>
+  </div>
+
+  <div id="recordsContainer" class="records"></div>
+
+  <div class="card" id="contactInfo">
+    <h2>Контакты и время работы</h2>
+    <p>Время работы: 8:00 – 17:00</p>
+    <p>Тел.: Дмитрий 0937900765, Владислав 0969575306</p>
+    <a class="tg-button" href="https://t.me/VladyslavShunu" target="_blank">Наш Telegram</a>
+    <a href="https://maps.app.goo.gl/hDVFX9WXePfR5HTh9" target="_blank">Мы на карте</a>
+  </div>
 </div>
 </body>
 </html>
