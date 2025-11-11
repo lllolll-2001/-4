@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Шиномонтаж</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="script.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Шиномонтаж</h1>
+  </header>
+
+  <div id="clientForm" class="card">
+    <h2>Запись на обслуживание</h2>
+    <input type="text" id="clientName" placeholder="Ваше имя">
+    <select id="vehicleType">
+      <option value="Легковой">Легковой</option>
+      <option value="Кроссовер">Кроссовер</option>
+      <option value="Внедорожник">Внедорожник</option>
+      <option value="Грузовой">Грузовой</option>
+      <option value="Микроавтобус">Микроавтобус</option>
+      <option value="Коммерческий">Коммерческий</option>
+    </select>
+    <select id="wheelRadius">
+      <option value="13-15">13-15</option>
+      <option value="16-18">16-18</option>
+      <option value="19-21">19-21</option>
+    </select>
+    <select id="service">
+      <option value="Балансировка">Балансировка</option>
+      <option value="Смена резины">Смена резины</option>
+      <option value="Смена резины + Балансировка">Смена резины + Балансировка</option>
+    </select>
+    <input type="date" id="serviceDate" min="">
+    <select id="serviceTime"></select>
+    <button onclick="submitClientRecord()">Записаться</button>
+  </div>
+
+  <div class="card" id="contactInfo">
+    <h2>Контакты и время работы</h2>
+    <p>Время работы: 8:00 – 17:00</p>
+    <p>Тел.: Дмитрий 0937900765, Владислав 0969575306</p>
+    <a class="tg-button" href="https://t.me/VladyslavShunu" target="_blank">Наш Telegram</a>
+    <a href="https://maps.app.goo.gl/hDVFX9WXePfR5HTh9" target="_blank">Мы на карте</a>
+  </div>
+
+  <div class="card" id="loginForm">
+    <h2>Вход для работников и босса</h2>
+    <input type="text" id="loginUsername" placeholder="Логин">
+    <input type="password" id="loginPassword" placeholder="Пароль">
+    <button onclick="login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value)">Войти</button>
+  </div>
+
+  <div id="recordsContainer"></div>
+</div>
+</body>
+</html>
