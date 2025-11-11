@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -38,8 +39,16 @@
       <h1>Шиномонтаж</h1>
     </header>
 
+    <!-- Блок входа -->
+    <div class="card" id="loginCard">
+      <h2>Вход для сотрудников</h2>
+      <input type="text" id="username" placeholder="Логин">
+      <input type="password" id="password" placeholder="Пароль">
+      <button id="loginBtn">Войти</button>
+    </div>
+
     <!-- Форма записи -->
-    <div class="card">
+    <div class="card" id="clientCard">
       <h2>Запись клиента</h2>
       <input type="text" id="clientName" placeholder="Имя клиента">
       <input type="text" id="clientPhone" placeholder="Номер телефона">
@@ -51,15 +60,9 @@
       </select>
       <select id="radius">
         <option value="">Радиус колёс</option>
-        <option>R13</option>
-        <option>R14</option>
-        <option>R15</option>
-        <option>R16</option>
-        <option>R17</option>
-        <option>R18</option>
-        <option>R19</option>
-        <option>R20</option>
-        <option>R21</option>
+        <option>R13</option><option>R14</option><option>R15</option>
+        <option>R16</option><option>R17</option><option>R18</option>
+        <option>R19</option><option>R20</option><option>R21</option>
       </select>
       <select id="workType">
         <option value="">Вид работы</option>
@@ -78,8 +81,8 @@
       <div id="records" class="records"></div>
     </div>
 
-    <!-- Панель начальника -->
-    <div class="card" id="adminPanel">
+    <!-- Панель начальника (по умолчанию скрыта) -->
+    <div class="card" id="adminPanel" style="display:none;">
       <h2>Панель начальника</h2>
       <button id="showDaily">Показать за день</button>
       <button id="showWeekly">Показать за неделю</button>
@@ -100,6 +103,23 @@
 
   <script>
     const records = [];
+    let isBoss = false;
+
+    // Вход
+    document.getElementById('loginBtn').addEventListener('click', ()=>{
+      const user = username.value.trim().toLowerCase();
+      const pass = password.value.trim();
+      if(user === 'boss' && pass === '1234'){
+        isBoss = true;
+        document.getElementById('adminPanel').style.display = 'block';
+        alert('Вход выполнен как начальник');
+        document.getElementById('loginCard').style.display = 'none';
+      } else {
+        alert('Неверный логин или пароль');
+      }
+    });
+
+    // Добавление записи
     document.getElementById('saveRecord').addEventListener('click', () => {
       const name = clientName.value.trim();
       const phone = clientPhone.value.trim();
@@ -111,24 +131,42 @@
         alert("Заполните имя, телефон и время!");
         return;
       }
-      const record = {name, phone, car, rad, work, time};
+      const record = {name, phone, car, rad, work, time, done:false};
       records.push(record);
       renderRecords();
     });
 
+    // Отрисовка записей
     function renderRecords() {
       const container = document.getElementById('records');
       container.innerHTML = '';
-      records.forEach(r => {
+      records.forEach((r, i) => {
         const div = document.createElement('div');
         div.className = 'record';
         div.innerHTML = `
           <strong>${r.name}</strong> (${r.phone})<br>
           ${r.car || ''} ${r.rad || ''} — ${r.work || ''}<br>
-          Время: ${r.time}
+          Время: ${r.time}<br>
+          ${isBoss ? `<button onclick="markDone(${i})">Сделано</button> 
+                      <button onclick="markNoShow(${i})">Не приехал</button>` : ''}
         `;
         container.appendChild(div);
       });
+    }
+
+    function markDone(i){
+      const sum = prompt('Введите сумму за работу:');
+      if(sum){
+        records[i].done = true;
+        records[i].sum = sum;
+        alert('Отмечено как сделано.');
+        renderRecords();
+      }
+    }
+
+    function markNoShow(i){
+      records[i].status = 'Не приехал';
+      renderRecords();
     }
   </script>
 </body>
