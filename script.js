@@ -2,7 +2,7 @@ let currentUser = null;
 let records = [];
 let timeSelect = document.getElementById('serviceTime');
 
-// ==================== Время обслуживания ====================
+// Время
 function fillTimeSlots() {
   timeSelect.innerHTML = '';
   for(let h=8; h<=16; h++) {
@@ -12,10 +12,10 @@ function fillTimeSlots() {
 }
 fillTimeSlots();
 
-// Минимальная дата сегодня
+// Минимальная дата
 document.getElementById('serviceDate').min = new Date().toISOString().split('T')[0];
 
-// ==================== Клиентская запись ====================
+// Клиентская запись
 async function submitClientRecord() {
   const newRecord = {
     name: document.getElementById('clientName').value,
@@ -33,7 +33,7 @@ async function submitClientRecord() {
   await addRecord(newRecord);
 }
 
-// ==================== API взаимодействие ====================
+// API
 async function fetchRecords() {
   const res = await fetch('/api/records');
   records = await res.json();
@@ -50,6 +50,7 @@ async function addRecord(record) {
 }
 
 async function updateRecord(id, update) {
+  if(!currentUser) return alert('Войдите в систему');
   await fetch('/api/records', {
     method:'PUT',
     headers:{'Content-Type':'application/json'},
@@ -58,7 +59,7 @@ async function updateRecord(id, update) {
   fetchRecords();
 }
 
-// ==================== Логин ====================
+// Логин
 async function login(username, password) {
   const res = await fetch('/api/login', {
     method:'POST',
@@ -70,25 +71,20 @@ async function login(username, password) {
     currentUser = data.user;
     alert('Вход успешен');
 
-    // Показываем контейнер записей
     document.getElementById('recordsContainer').style.display = 'block';
-    // Скрываем форму входа
     document.getElementById('loginForm').style.display = 'none';
 
-    // Показываем фильтр только для босса
     if(currentUser.role === 'boss') {
       document.getElementById('bossFilter').style.display = 'block';
-    } else {
-      document.getElementById('bossFilter').style.display = 'none';
     }
 
-    fetchRecords(); // отрисовываем записи
+    fetchRecords();
   } else {
     alert('Неверный логин или пароль');
   }
 }
 
-// ==================== Отрисовка записей ====================
+// Отрисовка
 function renderRecords() {
   const container = document.getElementById('recordsContainer');
   container.innerHTML = '';
@@ -97,27 +93,24 @@ function renderRecords() {
     div.className='record';
     div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''} <br> 
     Создал: ${r.createdBy} <br>`;
-
-    // Кнопки для работников
     if(currentUser && currentUser.role==='worker') {
       div.innerHTML += `<button onclick="updateRecord(${r.id},{status:'Сделано'})">Сделано</button>
                         <button onclick="updateRecord(${r.id},{status:'Не приехал'})">Не приехал</button>`;
       div.innerHTML += `<button onclick="addWork(${r.id})">Добавить работу</button>`;
     }
-
     container.appendChild(div);
   });
 }
 
-// ==================== Добавление работы без записи ====================
+// Добавление работы
 async function addWork(recordId=null){
+  if(!currentUser) return alert('Войдите в систему');
   const workName = prompt('Что сделано?');
   const sum = prompt('Сумма:');
   if(!workName || !sum) return;
-
   const workRecord = {
     name: workName,
-    sum: sum,
+    sum: Number(sum),
     date: new Date().toISOString().split('T')[0],
     createdBy: currentUser.username,
     linkedTo: recordId
@@ -125,8 +118,9 @@ async function addWork(recordId=null){
   await addRecord(workRecord);
 }
 
-// ==================== Фильтр для босса ====================
+// Фильтр босса
 function filterRecords(period) {
+  if(currentUser?.role !== 'boss') return;
   const now = new Date();
   let filtered = [];
 
@@ -150,5 +144,5 @@ function filterRecords(period) {
   document.getElementById('filterResult').innerText = `Сумма: ${sum} грн`;
 }
 
-// ==================== Инициализация ====================
+// Инициализация
 fetchRecords();
