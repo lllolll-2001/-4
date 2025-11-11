@@ -1,23 +1,30 @@
-let records = [];
+let records = []; // все записи клиентов и работы
 
 export default function handler(req, res) {
   if (req.method === 'GET') {
     res.status(200).json(records);
   } else if (req.method === 'POST') {
     const newRecord = req.body;
-    if (newRecord) {
-      newRecord.id = Date.now();
-      records.push(newRecord);
-      res.status(201).json({ message: 'Запись добавлена', record: newRecord });
+    if (!newRecord) return res.status(400).json({ message: 'Некорректные данные' });
+
+    // если это запись для логина, пропускаем сюда
+    if(newRecord.username && newRecord.password) {
+      return res.status(400).json({ message: 'Используйте /api/login для авторизации' });
+    }
+
+    newRecord.id = Date.now();
+    records.push(newRecord);
+    res.status(201).json({ message: 'Запись добавлена', record: newRecord });
+  } else if (req.method === 'PUT') {
+    const { id, update } = req.body;
+    const record = records.find(r => r.id === id);
+    if(record) {
+      Object.assign(record, update);
+      res.status(200).json({ message: 'Запись обновлена', record });
     } else {
-      res.status(400).json({ message: 'Некорректные данные' });
+      res.status(404).json({ message: 'Запись не найдена' });
     }
   } else {
     res.status(405).json({ message: 'Метод не поддерживается' });
   }
 }
-
-let users = [
-  { id:1, username:'boss', password:'boss123', role:'boss' },
-  { id:2, username:'worker', password:'worker123', role:'worker' }
-];
