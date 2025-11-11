@@ -16,3 +16,8 @@ export default function handler(req, res) {
     res.status(405).json({ message: 'Метод не поддерживается' });
   }
 }
+
+let users = [
+  { id:1, username:'boss', password:'boss123', role:'boss' },
+  { id:2, username:'worker', password:'worker123', role:'worker' }
+];
