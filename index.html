@@ -1,173 +1,151 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Шиномонтаж — Запись и учёт</title>
-  <style>
-    :root{
-      --bg:#121217;
-      --card:#1f1f24;
-      --accent:#ff3b3b;
-      --text:#f5f5f5;
-      --muted:#bbbbbb;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,Arial,Helvetica,sans-serif;
-      background:linear-gradient(180deg,#0f0f14 0%, #15151a 100%);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-    }
-    .wrap{max-width:980px;margin:24px auto;padding:16px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    header h1{color:var(--accent);margin:0}
-    .card{background:var(--card);padding:14px;border-radius:10px;margin-bottom:14px;box-shadow:0 6px 18px rgba(0,0,0,0.45)}
-    input, select {width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#0f1114;color:var(--text)}
-    button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-    button:hover{opacity:.95}
-    .tg-button{display:inline-block;margin:4px 0;padding:6px 10px;background:#0088cc;color:#fff;border-radius:6px;text-decoration:none}
-    .records {margin-top:14px;}
-    .record {background:linear-gradient(180deg,#16161a,#111114);border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin:8px 0;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шиномонтаж</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+header {
+  background: #222;
+  color: #fff;
+  padding: 15px;
+  font-size: 20px;
+}
+.container {
+  max-width: 600px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+input, select, button {
+  margin: 5px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+button {
+  background: #222;
+  color: #fff;
+  cursor: pointer;
+}
+button:hover {
+  background: #555;
+}
+#records {
+  text-align: left;
+  margin-top: 20px;
+}
+.hidden {
+  display: none;
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Шиномонтаж</h1>
-    </header>
 
-    <!-- Блок входа -->
-    <div class="card" id="loginCard">
-      <h2>Вход для сотрудников</h2>
-      <input type="text" id="username" placeholder="Логин">
-      <input type="password" id="password" placeholder="Пароль">
-      <button id="loginBtn">Войти</button>
-    </div>
+<header>Шиномонтаж — запись клиентов</header>
 
-    <!-- Форма записи -->
-    <div class="card" id="clientCard">
-      <h2>Запись клиента</h2>
-      <input type="text" id="clientName" placeholder="Имя клиента">
-      <input type="text" id="clientPhone" placeholder="Номер телефона">
-      <select id="carType">
-        <option value="">Тип машины</option>
-        <option>Легковой</option>
-        <option>Кроссовер</option>
-        <option>Коммерческий транспорт</option>
-      </select>
-      <select id="radius">
-        <option value="">Радиус колёс</option>
-        <option>R13</option><option>R14</option><option>R15</option>
-        <option>R16</option><option>R17</option><option>R18</option>
-        <option>R19</option><option>R20</option><option>R21</option>
-      </select>
-      <select id="workType">
-        <option value="">Вид работы</option>
-        <option>Снятие/установка</option>
-        <option>Балансировка</option>
-        <option>Ремонт прокола</option>
-        <option>Замена шин</option>
-      </select>
-      <input type="datetime-local" id="appointmentTime">
-      <button id="saveRecord">Сохранить запись</button>
-    </div>
-
-    <!-- Список записей -->
-    <div class="card">
-      <h2>Список записей</h2>
-      <div id="records" class="records"></div>
-    </div>
-
-    <!-- Панель начальника (по умолчанию скрыта) -->
-    <div class="card" id="adminPanel" style="display:none;">
-      <h2>Панель начальника</h2>
-      <button id="showDaily">Показать за день</button>
-      <button id="showWeekly">Показать за неделю</button>
-      <button id="showMonthly">Показать за месяц</button>
-      <div id="summary"></div>
-    </div>
-
-    <!-- Контакты -->
-    <div class="card" id="contactInfo">
-      <h2>Контакты и график работы</h2>
-      <p>График работы: <strong>8:00 – 17:00</strong></p>
-      <p>Тел.: Дмитрий — <a href="tel:+380937900765" class="tg-button">093-790-0765</a><br>
-      Владислав — <a href="tel:+380969575306" class="tg-button">096-957-5306</a></p>
-      <a class="tg-button" href="https://t.me/VladyslavShunu" target="_blank">Наш Telegram</a><br>
-      <a href="https://maps.app.goo.gl/G2bUdBGAhC3RuR9q8" target="_blank" class="tg-button">Мы на карте</a>
-    </div>
+<div class="container">
+  <div id="loginSection">
+    <input type="password" id="password" placeholder="Пароль начальника">
+    <button onclick="login()">Войти</button>
   </div>
 
-  <script>
-    const records = [];
-    let isBoss = false;
+  <div id="workerSection">
+    <h3>Запись клиента</h3>
+    <input id="name" placeholder="Имя клиента">
+    <input id="phone" placeholder="Номер телефона">
+    <input id="time" type="time">
+    <select id="radius">
+      <option>До 21</option>
+      <option>Больше 21</option>
+    </select>
+    <select id="carType">
+      <option>Легковой</option>
+      <option>Кроссовер</option>
+      <option>Коммерческий транспорт</option>
+    </select>
+    <select id="workType">
+      <option>Замена шин</option>
+      <option>Балансировка</option>
+      <option>Ремонт прокола</option>
+    </select>
+    <button onclick="addRecord()">Добавить запись</button>
+  </div>
 
-    // Вход
-    document.getElementById('loginBtn').addEventListener('click', ()=>{
-      const user = username.value.trim().toLowerCase();
-      const pass = password.value.trim();
-      if(user === 'boss' && pass === '1234'){
-        isBoss = true;
-        document.getElementById('adminPanel').style.display = 'block';
-        alert('Вход выполнен как начальник');
-        document.getElementById('loginCard').style.display = 'none';
-      } else {
-        alert('Неверный логин или пароль');
-      }
-    });
+  <div id="bossPanel" class="hidden">
+    <h3>Панель начальника</h3>
+    <button onclick="loadRecords()">Обновить записи</button>
+    <div id="records"></div>
+  </div>
 
-    // Добавление записи
-    document.getElementById('saveRecord').addEventListener('click', () => {
-      const name = clientName.value.trim();
-      const phone = clientPhone.value.trim();
-      const car = carType.value;
-      const rad = radius.value;
-      const work = workType.value;
-      const time = appointmentTime.value;
-      if(!name || !phone || !time){
-        alert("Заполните имя, телефон и время!");
-        return;
-      }
-      const record = {name, phone, car, rad, work, time, done:false};
-      records.push(record);
-      renderRecords();
-    });
+  <div style="margin-top: 20px;">
+    <p><b>График работы:</b> 8:00–17:00</p>
+    <p><a href="https://t.me/yourtelegram" target="_blank">Наш Telegram</a></p>
+    <p><a href="https://maps.app.goo.gl/G2bUdBGAhC3RuR9q8" target="_blank">Мы на карте</a></p>
+  </div>
+</div>
 
-    // Отрисовка записей
-    function renderRecords() {
-      const container = document.getElementById('records');
-      container.innerHTML = '';
-      records.forEach((r, i) => {
-        const div = document.createElement('div');
-        div.className = 'record';
-        div.innerHTML = `
-          <strong>${r.name}</strong> (${r.phone})<br>
-          ${r.car || ''} ${r.rad || ''} — ${r.work || ''}<br>
-          Время: ${r.time}<br>
-          ${isBoss ? `<button onclick="markDone(${i})">Сделано</button> 
-                      <button onclick="markNoShow(${i})">Не приехал</button>` : ''}
-        `;
-        container.appendChild(div);
+<script>
+const BOSS_PASSWORD = "boss";
+
+function login() {
+  const pass = document.getElementById("password").value;
+  if (pass === BOSS_PASSWORD) {
+    document.getElementById("bossPanel").classList.remove("hidden");
+    document.getElementById("workerSection").classList.add("hidden");
+    document.getElementById("loginSection").classList.add("hidden");
+    loadRecords();
+  } else {
+    alert("Неверный пароль!");
+  }
+}
+
+function addRecord() {
+  const record = {
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    time: document.getElementById("time").value,
+    radius: document.getElementById("radius").value,
+    carType: document.getElementById("carType").value,
+    workType: document.getElementById("workType").value,
+    date: new Date().toLocaleDateString()
+  };
+
+  fetch("/api/records.json")
+    .then(r => r.json())
+    .then(data => {
+      data.push(record);
+      return fetch("/api/records.json", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
       });
-    }
+    })
+    .then(() => alert("Запись добавлена!"))
+    .catch(() => alert("Ошибка сохранения"));
+}
 
-    function markDone(i){
-      const sum = prompt('Введите сумму за работу:');
-      if(sum){
-        records[i].done = true;
-        records[i].sum = sum;
-        alert('Отмечено как сделано.');
-        renderRecords();
-      }
-    }
+function loadRecords() {
+  fetch("/api/records.json")
+    .then(r => r.json())
+    .then(data => {
+      const container = document.getElementById("records");
+      container.innerHTML = "";
+      data.forEach((r, i) => {
+        container.innerHTML += `<p>${i+1}. ${r.name} — ${r.time} (${r.carType}, ${r.workType})</p>`;
+      });
+    });
+}
+</script>
 
-    function markNoShow(i){
-      records[i].status = 'Не приехал';
-      renderRecords();
-    }
-  </script>
 </body>
 </html>
