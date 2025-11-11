@@ -26,7 +26,6 @@ async function submitClientRecord() {
     time: document.getElementById('serviceTime').value,
     createdBy: 'client'
   };
-  // Проверка на дублирование времени
   if(records.some(r=>r.date===newRecord.date && r.time===newRecord.time)) {
     alert('Выбранное время уже занято!');
     return;
@@ -40,6 +39,7 @@ async function fetchRecords() {
   records = await res.json();
   renderRecords();
 }
+
 async function addRecord(record) {
   await fetch('/api/records', {
     method:'POST',
@@ -48,6 +48,7 @@ async function addRecord(record) {
   });
   fetchRecords();
 }
+
 async function updateRecord(id, update) {
   await fetch('/api/records', {
     method:'PUT',
@@ -59,7 +60,7 @@ async function updateRecord(id, update) {
 
 // Логин
 async function login(username, password) {
-  const res = await fetch('/api/records', {
+  const res = await fetch('/api/login', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({username,password})
@@ -69,7 +70,9 @@ async function login(username, password) {
     currentUser = data.user;
     alert('Вход успешен');
     renderRecords();
-  } else alert('Неверный логин или пароль');
+  } else {
+    alert('Неверный логин или пароль');
+  }
 }
 
 // Отрисовка записей
@@ -79,7 +82,7 @@ function renderRecords() {
   records.forEach(r=>{
     const div = document.createElement('div');
     div.className='record';
-    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle} | ${r.radius} | ${r.service} | ${r.date} ${r.time} <br> 
+    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle || ''} | ${r.radius || ''} | ${r.service || ''} | ${r.date || ''} ${r.time || ''} <br> 
     Создал: ${r.createdBy} <br>`;
     if(currentUser && currentUser.role==='worker') {
       div.innerHTML += `<button onclick="updateRecord(${r.id},{status:'Сделано'})">Сделано</button>
