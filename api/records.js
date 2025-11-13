@@ -1,38 +1,48 @@
-import { MongoClient, ObjectId } from 'mongodb';
-
-const uri = process.env.MONGODB_URI; mongodb+srv://Vlad_2001:<Vlad.2001>@cluster0.pm6xdyj.mongodb.net/?appName=Cluster0
-let client;
-let clientPromise;
-
-if (!process.env.MONGODB_URI) {
-  throw new Error('Не задана MONGODB_URI в .env');
-}
-
-client = new MongoClient(uri);
-clientPromise = client.connect();
+import pool from '../../lib/db';
 
 export default async function handler(req, res) {
-  const client = await clientPromise;
-  const db = client.db('tire_shop');
-  const collection = db.collection('records');
-
   if (req.method === 'GET') {
-    const records = await collection.find({}).toArray();
-    res.status(200).json(records);
+    try {
+      const result = await pool.query('SELECT * FROM records ORDER BY id');
+      res.status(200).json(result.rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Ошибка сервера' });
+    }
   } else if (req.method === 'POST') {
     const newRecord = req.body;
     if (!newRecord) return res.status(400).json({ message: 'Некорректные данные' });
-    newRecord.createdAt = new Date();
-    const result = await collection.insertOne(newRecord);
-    res.status(201).json({ message: 'Запись добавлена', record: result });
+
+    if(newRecord.username && newRecord.password) {
+      return res.status(400).json({ message: 'Используйте /api/login для авторизации' });
+    }
+
+    try {
+      const result = await pool.query(
+        'INSERT INTO records(data) VALUES($1) RETURNING *',
+        [newRecord]
+      );
+      res.status(201).json({ message: 'Запись добавлена', record: result.rows[0] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Ошибка сервера' });
+    }
   } else if (req.method === 'PUT') {
     const { id, update } = req.body;
-    if (!id || !update) return res.status(400).json({ message: 'Некорректные данные' });
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: update }
-    );
-    res.status(200).json({ message: 'Запись обновлена', result });
+    try {
+      const result = await pool.query(
+        'UPDATE records SET data = $1 WHERE id = $2 RETURNING *',
+        [update, id]
+      );
+      if(result.rows.length) {
+        res.status(200).json({ message: 'Запись обновлена', record: result.rows[0] });
+      } else {
+        res.status(404).json({ message: 'Запись не найдена' });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Ошибка сервера' });
+    }
   } else {
     res.status(405).json({ message: 'Метод не поддерживается' });
   }
