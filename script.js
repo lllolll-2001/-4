@@ -1,5 +1,4 @@
 let currentUser = null;
-let records = [];
 const timeSelect = document.getElementById('serviceTime');
 
 // ----------------- ВРЕМЯ -----------------
@@ -31,7 +30,10 @@ async function submitClientRecord() {
     return;
   }
 
-  if(records.some(r => r.date === newRecord.date && r.time === newRecord.time)) {
+  // Получаем актуальные записи с сервера
+  const records = await fetchRecords();
+
+  if(records.some(r => r.data.date === newRecord.date && r.data.time === newRecord.time)) {
     alert('Выбранное время уже занято!');
     return;
   }
@@ -42,9 +44,10 @@ async function submitClientRecord() {
 // ----------------- API -----------------
 async function fetchRecords() {
   const res = await fetch('/api/records');
-  records = await res.json();
-  renderRecords();
-  showEarnings();
+  const records = await res.json();
+  renderRecords(records);
+  showEarnings(records);
+  return records; // возвращаем для локальной проверки
 }
 
 async function addRecord(record) {
@@ -77,7 +80,7 @@ async function login(username, password) {
     const data = await res.json();
     currentUser = data.user;
     alert('Вход успешен');
-    renderRecords();
+    fetchRecords(); // обновляем записи после входа
     toggleEarningsSection();
   } else {
     alert('Неверный логин или пароль');
@@ -85,14 +88,14 @@ async function login(username, password) {
 }
 
 // ----------------- ОТОБРАЖЕНИЕ -----------------
-function renderRecords() {
+function renderRecords(records) {
   const container = document.getElementById('recordsContainer');
   container.innerHTML = '';
   records.forEach(r => {
     const div = document.createElement('div');
     div.className = 'record';
-    div.innerHTML = `<b>${r.name}</b> | ${r.vehicle} | ${r.radius} | ${r.service} | ${r.date} ${r.time} <br>
-      Создал: ${r.createdBy}`;
+    div.innerHTML = `<b>${r.data.name}</b> | ${r.data.vehicle} | ${r.data.radius} | ${r.data.service} | ${r.data.date} ${r.data.time} <br>
+      Создал: ${r.data.createdBy}`;
     
     if(currentUser && currentUser.role === 'worker') {
       div.innerHTML += `<br>
@@ -111,27 +114,27 @@ async function markStatus(id, status) {
 }
 
 // ----------------- ЗАРАБОТОК -----------------
-function calculateEarnings(period='day') {
+function calculateEarnings(records, period='day') {
   if(!records) return 0;
   const now = new Date();
   let filtered = [];
 
-  if(period==='day') filtered = records.filter(r=>r.sum && r.date===now.toISOString().split('T')[0]);
+  if(period==='day') filtered = records.filter(r=>r.data.sum && r.data.date===now.toISOString().split('T')[0]);
   if(period==='week') {
     const start = new Date(now); start.setDate(now.getDate()-now.getDay());
-    filtered = records.filter(r=>r.sum && new Date(r.date) >= start && new Date(r.date) <= now);
+    filtered = records.filter(r=>r.data.sum && new Date(r.data.date) >= start && new Date(r.data.date) <= now);
   }
   if(period==='month') {
     const month = now.getMonth(), year = now.getFullYear();
-    filtered = records.filter(r=>r.sum && new Date(r.date).getMonth()===month && new Date(r.date).getFullYear()===year);
+    filtered = records.filter(r=>r.data.sum && new Date(r.data.date).getMonth()===month && new Date(r.data.date).getFullYear()===year);
   }
-  return filtered.reduce((acc,r)=>acc+parseFloat(r.sum||0),0);
+  return filtered.reduce((acc,r)=>acc+parseFloat(r.data.sum||0),0);
 }
 
-function showEarnings() {
+function showEarnings(records) {
   if(!currentUser || currentUser.role !== 'boss') return;
   const period = document.getElementById('earningPeriod')?.value || 'day';
-  document.getElementById('earningsDisplay').innerText = calculateEarnings(period)+' грн';
+  document.getElementById('earningsDisplay').innerText = calculateEarnings(records, period)+' грн';
 }
 
 function toggleEarningsSection() {
